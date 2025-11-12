@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Out of the Box — Launching Soon</title>
+  <style>
+    :root{
+      --orange:#ff6a00;
+      --orange-dark:#e04f00;
+      --white:#ffffff;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    html,body{height:100%;font-family:Inter,system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial;color:var(--orange-dark);overflow:hidden}
+    body{
+      display:flex;align-items:center;justify-content:center;
+      background:url('lion.jpg') no-repeat center center/cover;
+    }
+    .overlay{
+      position:absolute;inset:0;background:rgba(0,0,0,0.6);z-index:0;
+    }
+    .card{
+      position:relative;z-index:1;
+      width:920px;max-width:95%;background:rgba(255,255,255,0.9);
+      border-radius:16px;padding:40px;display:flex;flex-direction:column;align-items:center;justify-content:center;
+      box-shadow:0 18px 50px rgba(224,79,0,0.15);
+    }
+
+    .logo{width:360px;max-width:86%;height:auto;margin-bottom:20px}
+    h1{font-size:28px;margin:0;color:var(--orange-dark);letter-spacing:1px}
+
+    #count{font-size:110px;font-weight:900;line-height:1;margin:18px 0;color:var(--orange);text-shadow:0 10px 30px rgba(224,79,0,0.1)}
+    #count.fade{animation:pop 420ms ease forwards}
+    @keyframes pop{0%{transform:scale(0.96);opacity:0}50%{transform:scale(1.06);opacity:1}100%{transform:scale(1);opacity:1}}
+
+    .btn{
+      margin-top:12px;background:linear-gradient(180deg,var(--orange),var(--orange-dark));color:var(--white);padding:14px 34px;border-radius:12px;border:none;font-weight:800;cursor:pointer;box-shadow:0 12px 30px rgba(224,79,0,0.25);transition:transform .12s ease;font-size:18px;
+    }
+    .btn:active{transform:translateY(1px)}
+
+    .rocket{width:160px;height:auto;margin-top:28px;opacity:0.95;transform-origin:bottom center;transition:transform 1.4s cubic-bezier(.2,.9,.3,1)}
+    .launching .rocket{transform:translateY(-34vh) rotate(-6deg) scale(1.06)}
+
+    @media (max-width:780px){
+      #count{font-size:72px}
+      .logo{width:260px}
+      .card{padding:22px}
+    }
+  </style>
+</head>
+<body>
+  <div class="overlay"></div>
+  <main class="card" id="card">
+    <img src="OOB_LOGO.png" alt="Out of the Box logo" class="logo" />
+    <h1>Out of the Box — Website Launch</h1>
+    <div id="count" aria-label="Countdown">10</div>
+    <button id="launch" class="btn" aria-haspopup="true">Launch Website</button>
+
+    <svg class="rocket" id="rocket" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <defs>
+        <linearGradient id="og" x1="0" x2="1">
+          <stop offset="0" stop-color="#ff9a4d" />
+          <stop offset="1" stop-color="#ff6a00" />
+        </linearGradient>
+      </defs>
+      <path fill="url(#og)" d="M256 0c-8 0-16 7-20 12-38 57-112 124-168 168-5 4-12 12-12 20 0 56 111 160 168 168 8 1 16-7 20-12 38-57 112-124 168-168 5-4 12-12 12-20 0-56-111-160-168-168-4-1-8-1-8-8z"/>
+    </svg>
+  </main>
+
+  <script>
+    const launchBtn = document.getElementById('launch');
+    const countEl = document.getElementById('count');
+    const card = document.getElementById('card');
+
+    function speakNumber(n){
+      return new Promise((resolve) => {
+        if(!('speechSynthesis' in window)) return resolve();
+        const u = new SpeechSynthesisUtterance(String(n));
+        u.rate = 0.98; u.pitch = 1.0; u.volume = 1.0;
+        u.onend = () => resolve();
+        u.onerror = () => resolve();
+        window.speechSynthesis.cancel();
+        window.speechSynthesis.speak(u);
+      });
+    }
+
+    async function startCountdown(){
+      launchBtn.disabled = true;
+      let n = 10;
+      const pop = () => { countEl.classList.remove('fade'); void countEl.offsetWidth; countEl.classList.add('fade'); }
+
+      for(; n >= 1; n--) {
+        pop();
+        countEl.textContent = n;
+        if('speechSynthesis' in window){
+          try { await speakNumber(n); } catch(e){ await new Promise(r=>setTimeout(r,850)); }
+        } else {
+          await new Promise(r=>setTimeout(r,850));
+        }
+      }
+
+      countEl.textContent = '0';
+      card.classList.add('launching');
+      await new Promise(r => setTimeout(r, 1100));
+      const target = 'https://outofthebox.lk/';
+      window.location.href = target;
+    }
+
+    launchBtn.addEventListener('click', startCountdown);
+  </script>
+</body>
+</html>
